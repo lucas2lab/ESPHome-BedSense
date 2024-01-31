@@ -1,0 +1,64 @@
+substitutions:
+  name: "bedsense"
+  friendly_name: "BedSense"
+  project_name: "lucas2lab.bedsense"
+  project_version: "0.1"
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  name_add_mac_suffix: true
+  project:
+    name: ${project_name}
+    version: ${project_version}
+  platformio_options:
+    board_build.flash_mode: dio
+
+esp32:
+  board: esp32-c3-devkitm-1
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+    version: recommended
+
+output:
+  - platform: gpio
+    id: led_debug
+    pin: GPIO10
+
+logger:
+
+api:
+
+ota:
+
+wifi:
+  ap: {}
+
+captive_portal:
+
+esp32_improv:
+  authorizer: none
+  status_indicator: led_debug
+
+dashboard_import:
+  package_import_url: github://lucas2lab/ESPHome-BedSense/esphome-bedsense.yaml@main
+  import_full_config: false
+
+sensor:
+  - name: "ADC"
+    id: adc_1
+    platform: adc
+    pin: GPIO3
+    attenuation: 11db # important to monitor over the whole 3.3v range
+    update_interval: 1s
+    filters:
+      - sliding_window_moving_average:
+          window_size: 15
+          send_every: 1
+
+binary_sensor:
+  - platform: analog_threshold
+    name: "Presence"
+    sensor_id: adc_1
+    threshold: 1.8
