@@ -41,24 +41,33 @@ esp32_improv:
   authorizer: none
   status_indicator: led_debug
 
+improv_serial:
+
 dashboard_import:
   package_import_url: github://lucas2lab/ESPHome-BedSense/esphome-bedsense.yaml@main
   import_full_config: false
 
 sensor:
-  - name: "ADC"
+  - name: "Pressure"
     id: adc_1
     platform: adc
     pin: GPIO3
-    attenuation: 11db # important to monitor over the whole 3.3v range
+    attenuation: 11db
     update_interval: 1s
-    filters:
+    filters: #https://esphome.io/components/sensor/index.html
       - sliding_window_moving_average:
-          window_size: 15
+          window_size: 60
           send_every: 1
+      - or:
+        - throttle: 60s
+        - delta: 0.1
 
-binary_sensor:
+binary_sensor: #https://esphome.io/components/binary_sensor/analog_threshold.html
   - platform: analog_threshold
     name: "Presence"
     sensor_id: adc_1
-    threshold: 1.8
+    threshold:
+      upper: 2.2
+      lower: 1.8
+    filters: #https://esphome.io/components/binary_sensor/index.html
+      - invert:
